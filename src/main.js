@@ -4,7 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// 1. Fetch & render portfolio projects
+// 1. Fetch & render portfolio buttons
 fetch("/src/assets/portfolio.json")
   .then((r) => r.json())
   .then((list) => {
@@ -30,10 +30,10 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x05070d, 1);
+renderer.setClearColor(0x030712, 1);
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x05070d, 0.08);
+scene.fog = new THREE.FogExp2(0x030712, 0.05);
 
 const camera = new THREE.PerspectiveCamera(
   45,
@@ -41,151 +41,185 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 );
-camera.position.set(0, 1, 6.5);
+
+// Responsive camera distance setup
+function getResponsiveCameraZ() {
+  const isMobile = window.innerWidth < 768;
+  return isMobile ? 8.2 : 6.0;
+}
+camera.position.set(0, 0.8, getResponsiveCameraZ());
 scene.add(camera);
 
-// Ambient & dynamic lights
-const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+// Ambient & dynamic key lights
+const ambient = new THREE.AmbientLight(0xffffff, 0.9);
 scene.add(ambient);
 
-const dirLight = new THREE.DirectionalLight(0x38bdf8, 1.8);
-dirLight.position.set(5, 8, 5);
+const dirLight = new THREE.DirectionalLight(0x38bdf8, 2.2);
+dirLight.position.set(6, 10, 8);
 scene.add(dirLight);
 
-const pointLight = new THREE.PointLight(0x00f3ff, 0, 10);
+const rimLight = new THREE.DirectionalLight(0x818cf8, 1.5);
+rimLight.position.set(-6, -4, -4);
+scene.add(rimLight);
+
+const pointLight = new THREE.PointLight(0x00f3ff, 0.5, 12);
 pointLight.position.set(0, 0, 1.5);
 scene.add(pointLight);
 
-// 3. Procedural Cyberpunk PC Rig Assembly
+// 3. Cyberpunk PC Rig Assembly
 const pcGroup = new THREE.Group();
+// Slight upward offset on mobile so it clears bottom story boxes
+function updatePcGroupY() {
+  const isMobile = window.innerWidth < 768;
+  pcGroup.position.y = isMobile ? 0.7 : 0;
+}
+updatePcGroupY();
 scene.add(pcGroup);
 
-// Materials
-const metalMat = new THREE.MeshStandardMaterial({
-  color: 0x111625,
+// Materials with high contrast so they pop clearly against the dark space
+const chassisMetalMat = new THREE.MeshStandardMaterial({
+  color: 0x1e293b,
   metalness: 0.85,
-  roughness: 0.25,
+  roughness: 0.2,
 });
 
-const darkMetalMat = new THREE.MeshStandardMaterial({
-  color: 0x080c14,
-  metalness: 0.9,
-  roughness: 0.4,
+const chassisAccentMat = new THREE.MeshStandardMaterial({
+  color: 0x0ea5e9,
+  metalness: 0.6,
+  roughness: 0.3,
+  emissive: 0x0284c7,
+  emissiveIntensity: 0.25,
 });
 
 const glassMat = new THREE.MeshPhysicalMaterial({
-  color: 0x0f172a,
+  color: 0x38bdf8,
   transparent: true,
-  opacity: 0.4,
+  opacity: 0.25,
   roughness: 0.1,
   metalness: 0.1,
-  transmission: 0.8,
-  ior: 1.5,
+  transmission: 0.85,
+  ior: 1.4,
 });
 
-// A. Chassis Frame
-const chassisGeo = new THREE.BoxGeometry(2.2, 3.2, 1.6);
-const chassis = new THREE.Mesh(chassisGeo, darkMetalMat);
-pcGroup.add(chassis);
+// A. Main Chassis Frame
+const chassisFrame = new THREE.Group();
+const bodyMesh = new THREE.Mesh(new THREE.BoxGeometry(2.0, 3.0, 1.5), chassisMetalMat);
+chassisFrame.add(bodyMesh);
 
-// Glass Side Panel
-const glassGeo = new THREE.BoxGeometry(0.04, 3.0, 1.45);
-const glass = new THREE.Mesh(glassGeo, glassMat);
-glass.position.set(1.12, 0, 0);
+// Corner glowing edge rails
+for (let x of [-1.01, 1.01]) {
+  for (let z of [-0.76, 0.76]) {
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(0.04, 3.05, 0.04), chassisAccentMat);
+    rail.position.set(x, 0, z);
+    chassisFrame.add(rail);
+  }
+}
+pcGroup.add(chassisFrame);
+
+// Tempered Glass Panel
+const glass = new THREE.Mesh(new THREE.BoxGeometry(0.03, 2.9, 1.4), glassMat);
+glass.position.set(1.02, 0, 0);
 pcGroup.add(glass);
 
-// B. Exploded Components
+// B. Components
 // Motherboard
-const moboGeo = new THREE.BoxGeometry(0.1, 2.4, 1.2);
-const moboMat = new THREE.MeshStandardMaterial({ color: 0x0d3b66, roughness: 0.6 });
-const mobo = new THREE.Mesh(moboGeo, moboMat);
-mobo.position.set(-0.8, 0, 0);
+const mobo = new THREE.Mesh(
+  new THREE.BoxGeometry(0.08, 2.4, 1.15),
+  new THREE.MeshStandardMaterial({ color: 0x0369a1, roughness: 0.5, metalness: 0.5 })
+);
+mobo.position.set(-0.75, 0, 0);
 pcGroup.add(mobo);
 
-// GPU (High-end Graphic Card)
-const gpuGeo = new THREE.BoxGeometry(0.6, 0.4, 1.3);
-const gpuMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8, roughness: 0.3 });
-const gpu = new THREE.Mesh(gpuGeo, gpuMat);
-gpu.position.set(-0.3, -0.4, 0);
+// GPU Block
+const gpu = new THREE.Mesh(
+  new THREE.BoxGeometry(0.55, 0.35, 1.2),
+  new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.9, roughness: 0.2 })
+);
+gpu.position.set(-0.35, -0.4, 0);
 pcGroup.add(gpu);
 
-// CPU AIO Cooler (with glowing RGB ring)
-const coolerGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.15, 32);
-const coolerMat = new THREE.MeshStandardMaterial({ color: 0x0f172a });
-const cooler = new THREE.Mesh(coolerGeo, coolerMat);
+// Liquid AIO CPU Cooler
+const cooler = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.28, 0.28, 0.15, 32),
+  new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.7, roughness: 0.3 })
+);
 cooler.rotation.z = Math.PI / 2;
-cooler.position.set(-0.65, 0.4, 0);
+cooler.position.set(-0.62, 0.38, 0);
 pcGroup.add(cooler);
 
-const coolerRingGeo = new THREE.TorusGeometry(0.22, 0.03, 16, 32);
-const coolerRingMat = new THREE.MeshBasicMaterial({ color: 0x00f3ff });
-const coolerRing = new THREE.Mesh(coolerRingGeo, coolerRingMat);
+const coolerRingMat = new THREE.MeshBasicMaterial({ color: 0x22d3ee });
+const coolerRing = new THREE.Mesh(
+  new THREE.TorusGeometry(0.2, 0.025, 16, 32),
+  coolerRingMat
+);
 coolerRing.rotation.y = Math.PI / 2;
-coolerRing.position.set(-0.55, 0.4, 0);
+coolerRing.position.set(-0.52, 0.38, 0);
 pcGroup.add(coolerRing);
 
-// RAM Sticks
-const ramGeo = new THREE.BoxGeometry(0.05, 0.7, 0.12);
-const ramMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.2 });
-const ram1 = new THREE.Mesh(ramGeo, ramMat);
-const ram2 = new THREE.Mesh(ramGeo, ramMat);
-ram1.position.set(-0.65, 0.5, 0.35);
-ram2.position.set(-0.65, 0.5, 0.2);
+// Glowing DDR5 RAM Sticks
+const ramMat = new THREE.MeshStandardMaterial({
+  color: 0x38bdf8,
+  emissive: 0x38bdf8,
+  emissiveIntensity: 0.4,
+});
+const ram1 = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.65, 0.1), ramMat);
+const ram2 = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.65, 0.1), ramMat);
+ram1.position.set(-0.62, 0.45, 0.32);
+ram2.position.set(-0.62, 0.45, 0.18);
 pcGroup.add(ram1);
 pcGroup.add(ram2);
 
-// Front RGB Fan Grids
-const fanGroup = new THREE.Group();
+// Front 3-Fan RGB Array
+const fansGroup = new THREE.Group();
+const fanRings = [];
 for (let i = -1; i <= 1; i++) {
-  const fanGeo = new THREE.TorusGeometry(0.35, 0.04, 16, 32);
-  const fanMat = new THREE.MeshBasicMaterial({ color: 0x00f3ff, transparent: true, opacity: 0.3 });
-  const fan = new THREE.Mesh(fanGeo, fanMat);
-  fan.position.set(0, i * 0.9, 0.82);
-  fanGroup.add(fan);
+  const fMat = new THREE.MeshBasicMaterial({ color: 0x00f3ff, transparent: true, opacity: 0.4 });
+  const fRing = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.03, 16, 32), fMat);
+  fRing.position.set(0, i * 0.85, 0.77);
+  fansGroup.add(fRing);
+  fanRings.push(fMat);
 }
-pcGroup.add(fanGroup);
+pcGroup.add(fansGroup);
 
-// Front LED Logo Panel (Aero Cloud Boot Screen)
+// Front Boot Monitor / Aero Cloud Display
 const canvasLogo = document.createElement("canvas");
 canvasLogo.width = 512;
 canvasLogo.height = 256;
 const ctx = canvasLogo.getContext("2d");
 ctx.fillStyle = "#020617";
 ctx.fillRect(0, 0, 512, 256);
-ctx.fillStyle = "#22d3ee";
-ctx.font = "bold 52px -apple-system, BlinkMacSystemFont, sans-serif";
+ctx.fillStyle = "#00f3ff";
+ctx.font = "bold 56px -apple-system, sans-serif";
 ctx.textAlign = "center";
 ctx.textBaseline = "middle";
-ctx.fillText("AERO CLOUD", 256, 110);
+ctx.fillText("AERO CLOUD", 256, 100);
 ctx.fillStyle = "#38bdf8";
-ctx.font = "24px monospace";
-ctx.fillText("SYSTEM ONLINE", 256, 175);
+ctx.font = "bold 26px monospace";
+ctx.fillText("SYSTEM ACTIVE", 256, 165);
 
 const logoTexture = new THREE.CanvasTexture(canvasLogo);
-const logoPanelGeo = new THREE.PlaneGeometry(1.6, 0.8);
 const logoPanelMat = new THREE.MeshBasicMaterial({
   map: logoTexture,
   transparent: true,
   opacity: 0,
 });
-const logoPanel = new THREE.Mesh(logoPanelGeo, logoPanelMat);
-logoPanel.position.set(0, 0, 0.83);
+const logoPanel = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.75), logoPanelMat);
+logoPanel.position.set(0, 0, 0.78);
 pcGroup.add(logoPanel);
 
-// 4. Initial Exploded Positions
-mobo.position.x = -2.8;
-gpu.position.x = 2.5;
-gpu.position.y = -1.5;
-gpu.rotation.z = 0.4;
-cooler.position.y = 2.5;
-coolerRing.position.y = 2.5;
-ram1.position.z = 2.0;
-ram2.position.z = 2.2;
-chassis.rotation.y = -0.5;
-pcGroup.rotation.y = -0.4;
+// 4. Initial Exploded Positions (Hero Stage)
+mobo.position.x = -2.6;
+gpu.position.x = 2.4;
+gpu.position.y = -1.6;
+gpu.rotation.z = 0.45;
+cooler.position.y = 2.4;
+coolerRing.position.y = 2.4;
+ram1.position.z = 2.2;
+ram2.position.z = 2.4;
+pcGroup.rotation.y = -0.55;
 pcGroup.rotation.x = 0.2;
 
-// 5. GSAP Scroll Animation Timeline
+// 5. GSAP Scroll Animation
 const tl = gsap.timeline({
   scrollTrigger: {
     trigger: "#scene-wrapper",
@@ -195,38 +229,38 @@ const tl = gsap.timeline({
   },
 });
 
-// Phase 1: Assembly (Floating parts lock into chassis)
+// Phase 1: Assembly Sequence
 tl.to(
   mobo.position,
-  { x: -0.8, ease: "power2.out", duration: 2 },
+  { x: -0.75, ease: "power2.out", duration: 2 },
   "assemble"
 )
   .to(
     gpu.position,
-    { x: -0.3, y: -0.4, ease: "power2.out", duration: 2 },
+    { x: -0.35, y: -0.4, ease: "power2.out", duration: 2 },
     "assemble"
   )
   .to(gpu.rotation, { z: 0, ease: "power2.out", duration: 2 }, "assemble")
   .to(
     [cooler.position, coolerRing.position],
-    { y: 0.4, ease: "back.out(1.2)", duration: 2 },
-    "assemble+=0.3"
-  )
-  .to(
-    [ram1.position, ram2.position],
-    { z: (i) => (i === 0 ? 0.35 : 0.2), ease: "power2.out", duration: 1.8 },
+    { y: 0.38, ease: "back.out(1.2)", duration: 2 },
     "assemble+=0.2"
   )
   .to(
+    [ram1.position, ram2.position],
+    { z: (i) => (i === 0 ? 0.32 : 0.18), ease: "power2.out", duration: 1.8 },
+    "assemble+=0.3"
+  )
+  .to(
     pcGroup.rotation,
-    { x: 0.05, y: -0.8, duration: 2.5, ease: "power1.inOut" },
+    { x: 0.05, y: -0.85, duration: 2.5, ease: "power1.inOut" },
     "assemble"
   );
 
-// Phase 2: Power Up & RGB Glow
+// Phase 2: Power Up LEDs & RGB Fans
 tl.to(
   pointLight,
-  { intensity: 4.5, duration: 1.5, ease: "power2.in" },
+  { intensity: 5.5, duration: 1.5, ease: "power2.in" },
   "powerup"
 )
   .to(
@@ -236,19 +270,31 @@ tl.to(
   )
   .to(
     ramMat,
-    { emissiveIntensity: 2.5, duration: 1 },
+    { emissiveIntensity: 3.0, duration: 1 },
+    "powerup"
+  )
+  .to(
+    fanRings,
+    { opacity: 0.9, duration: 1 },
     "powerup"
   )
   .to(
     pcGroup.rotation,
-    { y: -0.1, x: 0, duration: 2, ease: "power1.inOut" },
+    { y: -0.15, x: 0, duration: 2, ease: "power1.inOut" },
     "powerup"
   );
 
-// Phase 3: Zoom In & Boot Screen
+// Phase 3: Final Zoom & Screen Boot
+const targetZoomZ = () => (window.innerWidth < 768 ? 3.6 : 2.5);
 tl.to(
   camera.position,
-  { x: 0, y: 0, z: 2.4, duration: 3, ease: "power2.inOut" },
+  {
+    x: 0,
+    y: () => (window.innerWidth < 768 ? 0.7 : 0),
+    z: targetZoomZ,
+    duration: 3,
+    ease: "power2.inOut",
+  },
   "boot"
 )
   .to(
@@ -259,29 +305,33 @@ tl.to(
   .to(
     logoPanelMat,
     { opacity: 1, duration: 1.5, ease: "power2.out" },
-    "boot+=1"
+    "boot+=0.8"
   );
 
-// 6. Smooth Loop & Idle Floating Animation
+// 6. Natural Float & Continuous Render Loop
 let clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
   const elapsedTime = clock.getElapsedTime();
 
-  // Subtle natural idle float
-  pcGroup.position.y = Math.sin(elapsedTime * 1.5) * 0.06;
+  // Subtle floating motion
+  const baseY = window.innerWidth < 768 ? 0.7 : 0;
+  pcGroup.position.y = baseY + Math.sin(elapsedTime * 1.5) * 0.05;
   coolerRing.rotation.x = elapsedTime * 2;
 
   renderer.render(scene, camera);
 }
 animate();
 
-// 7. Responsive Resizing
+// 7. Dynamic Window Resizing
 window.addEventListener("resize", () => {
   const w = window.innerWidth;
   const h = window.innerHeight;
   renderer.setSize(w, h);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   camera.aspect = w / h;
+  camera.position.z = getResponsiveCameraZ();
+  updatePcGroupY();
   camera.updateProjectionMatrix();
+  ScrollTrigger.refresh();
 });
