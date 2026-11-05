@@ -1,0 +1,17 @@
+{
+  "name": "aero-cloud-3d",
+  "version": "1.0.0",
+  "description": "Aero Cloud – 3‑D scroll showcase",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.166.1",
+    "gsap": "^3.12.5"
+  },
+  "devDependencies": {
+    "vite": "^5.3.1"
+  }
+}
