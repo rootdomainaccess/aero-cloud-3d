@@ -2,20 +2,56 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Aero Cloud – 3‑D Portfolio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aero Cloud — 3D Architecture Experience</title>
   <link rel="stylesheet" href="./src/style.css">
 </head>
 <body>
 
-  <section id="portfolio">
-    <h1>Aero Cloud Projects</h1>
+  <!-- Top Navigation & Portfolio Showcase -->
+  <header id="portfolio">
+    <div class="brand-title">AERO CLOUD</div>
     <div class="cards" id="cards"></div>
-  </section>
+  </header>
 
-  <section id="scene-wrapper">
-    <canvas id="webgl"></canvas>
-  </section>
+  <!-- Fixed 3D Canvas -->
+  <canvas id="webgl"></canvas>
 
-  <script type="module" src="/src/main.js"></script>
+  <!-- Interactive Scroll Narrative Overlays -->
+  <div id="scene-wrapper">
+    <section class="story-step" id="step-1">
+      <div class="story-box">
+        <span class="step-badge">SYSTEM INITIALIZATION</span>
+        <h2>High-Performance Rig</h2>
+        <p>Distributed bare-metal infrastructure engineered for extreme compute. Scroll to assemble components.</p>
+      </div>
+    </section>
+
+    <section class="story-step" id="step-2">
+      <div class="story-box">
+        <span class="step-badge">HARDWARE INTEGRATION</span>
+        <h2>Precision Assembly</h2>
+        <p>Modular GPU compute units, liquid-cooled architecture, and ultra-fast memory lock seamlessly into position.</p>
+      </div>
+    </section>
+
+    <section class="story-step" id="step-3">
+      <div class="story-box">
+        <span class="step-badge">POWER SEQUENCE</span>
+        <h2>Powering Up</h2>
+        <p>Energizing circuit paths, active thermal loops, and continuous real-time diagnostic telemetry.</p>
+      </div>
+    </section>
+
+    <section class="story-step" id="step-4">
+      <div class="story-box">
+        <span class="step-badge">BOOT COMPLETE</span>
+        <h2>Aero Cloud Online</h2>
+        <p>Next-generation cloud framework deployed and synchronized across all nodes.</p>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
 </body>
 </html>

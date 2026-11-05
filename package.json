@@ -1,24 +1,16 @@
 {
   "name": "aero-cloud-3d",
+  "private": true,
   "version": "1.0.0",
-  "description": "Aero Cloud – 3‑D scroll showcase",
+  "description": "Aero Cloud 3D Scroll Showcase",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "preview": "next start"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "next": "^14.2.0",
-    "react": "^18.3.0",
-    "react-dom": "^18.3.0",
-    "tailwindcss": "^3.4.1",
-    "postcss": "^8.4.41",
-    "autoprefixer": "^10.4.19",
-    "three": "^0.166.1",
-    "@react-three/fiber": "^8.15.9",
-    "@react-three/drei": "^9.100.0",
-    "gsap": "^3.12.5"
+    "gsap": "^3.12.5",
+    "three": "^0.166.1"
   },
   "devDependencies": {
     "vite": "^5.3.1"
